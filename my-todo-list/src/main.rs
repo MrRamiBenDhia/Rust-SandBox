@@ -1,12 +1,12 @@
 extern crate fancy;
 
 use fancy::printcoln;
-use std::fs::File;
-use std::fs::OpenOptions;
+use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::io::{self, BufRead};
+use std::collections::HashSet;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 enum Operation {
     Add,
     Done,
@@ -20,7 +20,12 @@ fn main() {
     let list_todo = read_from_cmd(&mut operation);
     println!("Operation after = {:?}", operation);
 
-    add_to_file(&list_todo, &operation);
+    if operation == Operation::Done {
+        update_file_with_done_marker(&list_todo);
+    } else {
+        add_to_file(&list_todo);
+    }
+
     let loaded_list_todo = read_from_file();
 
     // println!("Loaded list : {:?}",loaded_list_todo);
@@ -41,26 +46,48 @@ fn read_from_file() -> Vec<String> {
     lines
 }
 
-fn add_to_file(list_todo: &Vec<String>, operation: &Operation) {
+fn add_to_file(list_todo: &Vec<String>) {
     let mut file = OpenOptions::new()
         .append(true)
         .open("data.txt")
         .expect("cannot open file");
 
     for item in list_todo {
-        match operation {
-            Operation::Done => {
-                file.write_all(("#".to_owned() + item + "\n").as_bytes())
-                    .expect("write failed");
-            }
-            _ => {
-                file.write_all((item.to_owned() + "\n").as_bytes())
-                    .expect("write failed");
-            }
-        }
+        file.write_all((item.to_owned() + "\n").as_bytes())
+            .expect("write failed");
     }
 
     println!("file append success");
+}
+
+fn update_file_with_done_marker(list_todo: &Vec<String>) {
+    let existing_items: Vec<_> = read_from_file();
+
+    let mut file = OpenOptions::new()
+        .write(true)
+        .truncate(true) // Truncate the file to clear its content
+        .open("data.txt")
+        .expect("cannot open file");
+
+    for (index, line) in existing_items.iter().enumerate() {
+        if list_todo.contains(line) {
+            let updated_line = if line.starts_with('#') {
+                line.to_owned() // If already starts with '#', keep it as it is
+            } else {
+                format!("#{}", line)
+            };
+            file.write_all(updated_line.as_bytes()).expect("write failed");
+        } else {
+            file.write_all(line.as_bytes()).expect("write failed");
+        }
+
+        // Add a newline if it's not the last line
+        if index < existing_items.len() - 1 {
+            file.write_all(b"\n").expect("write failed");
+        }
+    }
+
+    println!("file update success");
 }
 
 fn print_list(list_todo: &Vec<String>) {
