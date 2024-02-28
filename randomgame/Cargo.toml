@@ -1,0 +1,8 @@
+[package]
+name = "guess-game-app"
+version = "0.1.0"
+authors = ["Ramyy"]
+
+[dependencies]
+rand = "0.8.5"
+fancy = "0.3.1"

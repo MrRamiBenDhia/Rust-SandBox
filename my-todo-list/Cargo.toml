@@ -1,0 +1,7 @@
+[package]
+name = "to-do-miniapp"
+version = "0.1.0"
+authors = ["Ramyy"]
+
+[dependencies]
+fancy = "0.3.1"
