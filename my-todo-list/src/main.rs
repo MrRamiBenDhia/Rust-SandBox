@@ -4,7 +4,6 @@ use fancy::printcoln;
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::io::{self, BufRead};
-use std::collections::HashSet;
 
 #[derive(Debug, Eq, PartialEq)]
 enum Operation {
@@ -13,7 +12,7 @@ enum Operation {
 }
 
 fn main() {
-    printcoln!("[s|cyan]Hello world [magenta]!");
+    printcoln!("[s|cyan]To Do List [magenta]!");
 
     let mut operation = Operation::Add;
 
@@ -76,7 +75,8 @@ fn update_file_with_done_marker(list_todo: &Vec<String>) {
             } else {
                 format!("#{}", line)
             };
-            file.write_all(updated_line.as_bytes()).expect("write failed");
+            file.write_all(updated_line.as_bytes())
+                .expect("write failed");
         } else {
             file.write_all(line.as_bytes()).expect("write failed");
         }
@@ -91,10 +91,21 @@ fn update_file_with_done_marker(list_todo: &Vec<String>) {
 }
 
 fn print_list(list_todo: &Vec<String>) {
-    println!("Here is the complete list : {:?}", list_todo);
+    println!("Here is the complete list : ", );
+
+    for item in list_todo {
+        if item.contains("#") {
+
+            let show = item.replace('#', "");
+            print!("✔️ ");
+            printcoln!(" [s|cyan]{}", show);
+        } else {
+            println!("❌ {}", item);
+        }
+    }
 }
 
-fn read_from_cmd(mut operation: &mut Operation) -> Vec<String> {
+fn read_from_cmd(operation: &mut Operation) -> Vec<String> {
     println!("Operation before = {:?}", operation);
 
     let cmd_line = std::env::args();
